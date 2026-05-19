@@ -328,6 +328,16 @@ Shows completed job statistics.
 sacct -j 47018064
 ```
 
+Example output:
+
+```
+JobID           JobName  Partition    Account  AllocCPUS      State ExitCode 
+------------ ---------- ---------- ---------- ---------- ---------- -------- 
+47018064     iqtree3_b+      batch pi-lauersk         24  COMPLETED      0:0 
+47018064.ba+      batch            pi-lauersk         24  COMPLETED      0:0 
+47018064.ex+     extern            pi-lauersk         24  COMPLETED      0:0 
+```
+
 #### What it shows:
 
 * Job status (COMPLETED, FAILED, etc.)
@@ -347,6 +357,22 @@ sacct -j 47018064
 
 ```Bash
 seff 47018064
+```
+
+Example output:
+
+```
+Job ID: 47018064
+Cluster: dragon
+User/Group: pampum/g-pampum
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 24
+CPU Utilized: 02:58:30
+CPU Efficiency: 96.17% of 03:05:36 core-walltime
+Job Wall-clock time: 00:07:44
+Memory Utilized: 305.98 MB
+Memory Efficiency: 0.47% of 64.00 GB (64.00 GB/node)
 ```
 
 #### What it shows:
