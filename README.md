@@ -385,4 +385,211 @@ Memory Efficiency: 0.47% of 64.00 GB (64.00 GB/node)
 
 * Helps detect over-requested memory or idle CPUs
 
+## Understanding Pending Jobs & Fairshare
 
+One of the most common situations is seeing jobs like:
+
+```text
+JOBID      PARTITION NAME      USER    ST  TIME  NODES  NODELIST(REASON)
+47924278   batch     my-job    user    PD  0:00      1  (Priority)
+```
+
+### Pending (`PD`) does **not** mean stuck
+
+A job with
+
+```text
+ST = PD
+REASON = (Priority)
+```
+
+means:
+
+- Slurm has successfully accepted your job.
+- Your job is waiting in the scheduler queue.
+- There is **no error** with your job.
+
+It **does not** mean:
+
+- the cluster is broken
+- your job script failed
+- the scheduler is hung
+
+Usually it simply means other queued jobs currently have a higher scheduling priority.
+
+---
+
+## Why a job stays in `(Priority)`
+
+Slurm schedules jobs using multiple priority components, including:
+
+- **Fairshare** – how much of the cluster you (or your project) have used recently.
+- **Age** – jobs gain priority the longer they wait.
+- **Job size** – some clusters reward or penalize very large jobs.
+- **Partition/QoS** – some partitions or QoS levels receive higher priority.
+
+You can inspect the priority calculation with:
+
+```bash
+sprio -j <jobid>
+```
+
+Example:
+
+```text
+JOBID       PRIORITY
+
+AGE         0
+FAIRSHARE   3746
+JOBSIZE     1
+PARTITION   0
+QOS         0
+SITE        0
+```
+
+Interpretation:
+
+- `AGE = 0` → newly submitted job
+- `FAIRSHARE = 3746` → all current priority comes from fairshare
+- `JOBSIZE = 1` → little/no effect
+- `PARTITION/QOS = 0` → no additional bonuses
+
+---
+
+## What is Fairshare?
+
+Fairshare prevents one user or project from monopolizing the cluster.
+
+Users who have consumed lots of resources recently receive lower scheduling priority, while users who have used fewer resources receive higher priority.
+
+Fairshare gradually recovers over time as older usage expires.
+
+View your fairshare:
+
+```bash
+sshare -u $USER
+```
+
+or
+
+```bash
+sshare -l -u $USER
+```
+
+Example:
+
+```text
+Account         User     RawUsage  EffectvUsage  FairShare
+pi-lauersk      pampum   1836601      1.000000    0.374585
+```
+
+Meaning:
+
+| Column | Meaning |
+|---------|---------|
+| `RawUsage` | Historical resource consumption |
+| `EffectvUsage` | Relative usage within your account |
+| `FairShare` | Fairshare factor (closer to **1.0** is better) |
+
+A fairshare around **0.3–0.5** is fairly normal and is **not** by itself enough to explain very long queue times.
+
+---
+
+## Why does `sprio` show 3746?
+
+Many Slurm installations convert the fairshare factor into an integer priority score.
+
+For example:
+
+```text
+FairShare = 0.374585
+```
+
+becomes approximately
+
+```text
+FAIRSHARE = 3746
+```
+
+in `sprio`.
+
+The absolute number is not important—it only matters relative to other queued jobs.
+
+---
+
+## "Idle" nodes may not actually be available
+
+A node showing a low CPU load does **not** necessarily mean your job can start.
+
+Slurm schedules based on allocated resources, not instantaneous CPU usage.
+
+A node may still be unavailable because:
+
+- CPUs are already allocated
+- insufficient memory is free
+- GPUs are allocated
+- another job has a reservation
+- backfill scheduling cannot fit your requested walltime
+
+---
+
+## Useful commands when jobs are pending
+
+### Check priority
+
+```bash
+sprio -j <jobid>
+```
+
+Shows how your scheduling priority is computed.
+
+---
+
+### Inspect the job
+
+```bash
+scontrol show job <jobid>
+```
+
+Useful fields:
+
+- `Reason`
+- `ReqTRES`
+- `NumCPUs`
+- `MinMemory`
+- `TimeLimit`
+
+These reveal what resources Slurm is trying to satisfy.
+
+---
+
+### Estimate start time
+
+```bash
+squeue --start -j <jobid>
+```
+
+If Slurm can predict a start time, it will display one.
+
+If it shows `N/A`, the scheduler cannot yet estimate when enough resources will become available.
+
+---
+
+## Interpreting cluster status
+
+A healthy cluster can still have many pending jobs.
+
+For example:
+
+- Nodes with low CPU load are **not necessarily free**.
+- Some nodes may be reserved.
+- Other users may have higher scheduling priority.
+- Your job may simply be waiting its turn.
+
+Seeing
+
+```text
+Reason=(Priority)
+```
+
+is generally a sign that the scheduler is functioning normally rather than that something is wrong.
