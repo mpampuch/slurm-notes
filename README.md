@@ -600,3 +600,30 @@ Reason=(Priority)
 ```
 
 is generally a sign that the scheduler is functioning normally rather than that something is wrong.
+
+## Showing Node info
+
+Use `scontrol show node`
+
+```
+$ sbatch --test-only .command.run
+sbatch: Job 52531599 to start at 2026-10-02T04:14:00 a using 8 processors on nodes gpu510-12 in partition gpu
+
+$ scontrol show node gpu510-12
+NodeName=gpu510-12 Arch=x86_64 CoresPerSocket=16 
+   CPUAlloc=30 CPUEfctv=30 CPUTot=32 CPULoad=15.33
+   AvailableFeatures=cpu_intel_gold_6142,el9,gpu,gpu_rtx2080ti,ibex2018,intel,intel_gpu,local_200G,local_400G,local_500G,nolmem,rtx2080ti,small_gpu,ssh,unrestricted
+   ActiveFeatures=cpu_intel_gold_6142,el9,gpu,gpu_rtx2080ti,ibex2018,intel,intel_gpu,local_200G,local_400G,local_500G,nolmem,rtx2080ti,small_gpu,ssh,unrestricted
+   Gres=gpu:rtx_2080_ti:8(S:0-1)
+   NodeAddr=gpu510-12 NodeHostName=gpu510-12 Version=25.05.9
+   OS=Linux 5.14.0-427.20.1.el9_4.0.1.x86_64 #1 SMP PREEMPT_DYNAMIC Tue Jun 18 17:27:46 UTC 2024 
+   RealMemory=336896 AllocMem=184320 FreeMem=1290 Sockets=2 Boards=1
+   CoreSpecCount=2 CPUSpecList=1,2 
+   State=ALLOCATED ThreadsPerCore=1 TmpDisk=0 Weight=11495 Owner=N/A MCS_label=N/A
+   Partitions=gpu,gpu4 
+   BootTime=2026-09-17T11:02:55 SlurmdStartTime=2026-09-22T14:45:53
+   LastBusyTime=2026-09-24T23:43:18 ResumeAfterTime=None
+   CfgTRES=cpu=30,mem=329G,billing=30,gres/gpu=8
+   AllocTRES=cpu=30,mem=180G,gres/gpu=2
+   CurrentWatts=0 AveWatts=0
+```
