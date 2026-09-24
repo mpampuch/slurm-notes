@@ -575,6 +575,13 @@ If it shows `N/A`, the scheduler cannot yet estimate when enough resources will 
 
 ---
 
+## Testing jobscripts
+
+```
+$ sbatch --test-only .command.run
+sbatch: Job 52531326 to start at 2026-09-30T06:42:05 a using 8 processors on nodes gpu502-11 in partition gpu
+```
+
 ## Interpreting cluster status
 
 A healthy cluster can still have many pending jobs.
